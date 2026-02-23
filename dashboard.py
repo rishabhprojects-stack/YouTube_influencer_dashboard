@@ -6,6 +6,7 @@ from pathlib import Path
 from typing import Any
 
 import pandas as pd
+import plotly.express as px
 import streamlit as st
 
 
@@ -59,7 +60,23 @@ def _load_report(path_text: str, uploaded) -> dict[str, Any] | None:
 
 def _bar_df(data: dict[str, Any], col_a: str = "label", col_b: str = "value") -> pd.DataFrame:
     rows = [{col_a: k, col_b: v} for k, v in data.items()]
-    return pd.DataFrame(rows)
+    df = pd.DataFrame(rows)
+    if not df.empty and col_b in df.columns:
+        df[col_b] = pd.to_numeric(df[col_b], errors="coerce").fillna(0)
+    return df
+
+
+def _plot_bar(container, df: pd.DataFrame, x_col: str, y_col: str, title: str) -> None:
+    if df.empty or x_col not in df.columns or y_col not in df.columns:
+        container.info("No data available.")
+        return
+    try:
+        fig = px.bar(df, x=x_col, y=y_col, title=title)
+        fig.update_layout(margin=dict(l=10, r=10, t=45, b=10), height=360)
+        container.plotly_chart(fig, use_container_width=True)
+    except Exception as e:
+        container.warning(f"Chart render failed, showing table instead: {e}")
+        container.dataframe(df, hide_index=True, use_container_width=True)
 
 
 def render(report: dict[str, Any]) -> None:
@@ -96,16 +113,14 @@ def render(report: dict[str, Any]) -> None:
     transcript_dist = _safe_get(content, "transcript_sentiment", "distribution", default={})
     if transcript_dist:
         tdf = _bar_df(transcript_dist, "sentiment", "count")
-        col_l.write("**Transcript Sentiment (segment count)**")
-        col_l.bar_chart(tdf.set_index("sentiment"))
+        _plot_bar(col_l, tdf, "sentiment", "count", "Transcript Sentiment (segment count)")
     else:
         col_l.info("No transcript sentiment data.")
 
     audience_dist = _safe_get(audience, "general_sentiment", "sentiment_distribution_percent", default={})
     if audience_dist:
         adf = _bar_df(audience_dist, "sentiment", "percent")
-        col_r.write("**Audience Comment Sentiment (%)**")
-        col_r.bar_chart(adf.set_index("sentiment"))
+        _plot_bar(col_r, adf, "sentiment", "percent", "Audience Comment Sentiment (%)")
     else:
         col_r.info("No audience sentiment data.")
 
@@ -115,16 +130,15 @@ def render(report: dict[str, Any]) -> None:
     keywords = _safe_get(content, "keyword_extraction", "top_keywords", default=[])
     if keywords:
         kdf = pd.DataFrame(keywords).head(15)
-        ct1.write("**Top Keywords**")
-        ct1.bar_chart(kdf.set_index("keyword")["score"])
+        if "score" in kdf.columns:
+            kdf["score"] = pd.to_numeric(kdf["score"], errors="coerce").fillna(0)
+        _plot_bar(ct1, kdf, "keyword", "score", "Top Keywords")
     else:
         ct1.info("No keyword data.")
 
     storytelling = _safe_get(content, "storytelling_pattern", default={})
     if storytelling:
-        srows = pd.DataFrame(
-            [{"signal": k, "value": v} for k, v in storytelling.items()]
-        )
+        srows = pd.DataFrame([{"signal": k, "value": v} for k, v in storytelling.items()])
         ct2.write("**Storytelling Signals**")
         ct2.dataframe(srows, hide_index=True, use_container_width=True)
 
@@ -145,8 +159,7 @@ def render(report: dict[str, Any]) -> None:
     expr_dist = _safe_get(visual, "facial_expression", "distribution", default={})
     if expr_dist:
         edf = _bar_df(expr_dist, "expression", "count")
-        vb_l.write("**Facial Expression Distribution**")
-        vb_l.bar_chart(edf.set_index("expression"))
+        _plot_bar(vb_l, edf, "expression", "count", "Facial Expression Distribution")
     else:
         vb_l.info("No facial expression data.")
 
@@ -170,8 +183,7 @@ def render(report: dict[str, Any]) -> None:
     freq = _safe_get(brand_mentions, "frequency", default={})
     if freq:
         fdf = _bar_df(freq, "brand", "mentions").sort_values("mentions", ascending=False).head(20)
-        st.write("**Top Brand/Product Mentions**")
-        st.bar_chart(fdf.set_index("brand"))
+        _plot_bar(st, fdf, "brand", "mentions", "Top Brand/Product Mentions")
 
     brand_comment_sent = _safe_get(brands, "brand_comment_sentiment", default={})
     if brand_comment_sent:
@@ -189,7 +201,11 @@ def render(report: dict[str, Any]) -> None:
         bdf = pd.DataFrame(rows)
         if not bdf.empty:
             st.write("**Brand Sentiment in Comments (counts)**")
-            st.dataframe(bdf.sort_values(["positive", "negative"], ascending=[False, True]), hide_index=True, use_container_width=True)
+            st.dataframe(
+                bdf.sort_values(["positive", "negative"], ascending=[False, True]),
+                hide_index=True,
+                use_container_width=True,
+            )
 
     st.markdown("### Audience Breakdown")
     au1, au2 = st.columns(2)
@@ -207,7 +223,11 @@ def render(report: dict[str, Any]) -> None:
     if top_comments:
         st.markdown("### Top Comments")
         cdf = pd.DataFrame(top_comments)
-        st.dataframe(cdf[[c for c in ["author", "likes", "text", "time"] if c in cdf.columns]], hide_index=True, use_container_width=True)
+        st.dataframe(
+            cdf[[c for c in ["author", "likes", "text", "time"] if c in cdf.columns]],
+            hide_index=True,
+            use_container_width=True,
+        )
 
     warnings = report.get("warnings", [])
     if warnings:
