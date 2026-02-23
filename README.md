@@ -40,6 +40,9 @@ pip install -e .[dashboard]
 streamlit run dashboard.py
 ```
 
+If you want an example of the streamlit dashboard you can get it here : 
+https://youtubeinfluencerdashboard-2e2cn26ap9r7w8njd82vhs.streamlit.app
+
 ## Output
 
 The pipeline writes a JSON report with sections:
