@@ -1,0 +1,80 @@
+Metadata-Version: 2.4
+Name: yta-pipeline
+Version: 0.1.0
+Summary: Open-source local YouTube video and audience analytics pipeline
+Requires-Python: >=3.10
+Description-Content-Type: text/markdown
+Requires-Dist: yt-dlp>=2025.1.0
+Requires-Dist: ffmpeg-python>=0.2.0
+Requires-Dist: faster-whisper>=1.1.0
+Requires-Dist: numpy>=1.26.0
+Requires-Dist: pandas>=2.2.0
+Requires-Dist: opencv-python>=4.10.0.84
+Requires-Dist: scikit-learn>=1.5.0
+Requires-Dist: nltk>=3.9.0
+Requires-Dist: textblob>=0.18.0.post0
+Requires-Dist: spacy>=3.8.0
+Requires-Dist: youtube-comment-downloader>=0.1.76
+Requires-Dist: librosa>=0.10.2
+Requires-Dist: scenedetect[opencv]>=0.6.4
+Requires-Dist: matplotlib>=3.9.0
+Requires-Dist: tqdm>=4.67.0
+Requires-Dist: pyyaml>=6.0.2
+Provides-Extra: vision
+Requires-Dist: fer>=22.5.1; extra == "vision"
+Requires-Dist: mediapipe>=0.10.14; extra == "vision"
+Provides-Extra: ocr
+Requires-Dist: pytesseract>=0.3.10; extra == "ocr"
+
+# YouTube Video + Audience Analytics Pipeline (Local, Open-Source)
+
+This project implements a local analytics pipeline that accepts a YouTube URL and produces a structured JSON report with:
+
+- Video acquisition and metadata
+- Transcript and NLP analysis
+- Visual/behavioral indicators
+- Audience/comment sentiment and topical insights
+- Brand mention detection and brand sentiment estimates
+
+## Principles
+
+- Local-first execution after data retrieval
+- Open-source tools/models only
+- Modular architecture for replacing individual models/components
+
+## Quick Start
+
+1. Install system deps:
+   - `ffmpeg`
+   - (optional) `tesseract` for text-overlay detection
+2. Create a virtual env and install package:
+
+```bash
+python -m venv .venv
+source .venv/bin/activate
+pip install -e .
+```
+
+3. Run analysis:
+
+```bash
+yta-analyze --url "https://www.youtube.com/watch?v=<VIDEO_ID>" --output "outputs/report.json"
+```
+
+## Output
+
+The pipeline writes a JSON report with sections:
+
+- `video_metadata`
+- `engagement_metrics`
+- `content_analysis`
+- `visual_behavioral_analysis`
+- `brand_analysis`
+- `audience_analysis`
+- `artifacts`
+
+## Notes
+
+- Comment retrieval depends on YouTube comment accessibility and downloader limits.
+- Emotion/smile analysis uses baseline open-source CV methods and should be calibrated for production use.
+- If optional models are missing, the pipeline degrades gracefully and records warnings.

@@ -1,0 +1,33 @@
+acquisition:
+  work_dir: "outputs/artifacts"
+  frame_interval_sec: 2
+  max_comments: 1000
+
+transcription:
+  model_size: "base"
+  device: "auto"
+  compute_type: "int8"
+
+nlp:
+  top_keywords: 25
+  topic_count: 5
+  filler_words:
+    - "um"
+    - "uh"
+    - "like"
+    - "you know"
+    - "actually"
+    - "basically"
+
+video_analysis:
+  sample_fps: 1
+  max_frames_for_expression: 1200
+  smile_scale_factor: 1.7
+  smile_min_neighbors: 22
+
+audio_analysis:
+  hop_length: 512
+  sr: 16000
+
+report:
+  save_intermediate: true

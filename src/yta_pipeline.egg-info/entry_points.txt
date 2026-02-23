@@ -1,0 +1,2 @@
+[console_scripts]
+yta-analyze = yta_pipeline.cli:main

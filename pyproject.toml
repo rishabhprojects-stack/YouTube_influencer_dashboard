@@ -1,0 +1,49 @@
+[build-system]
+requires = ["setuptools>=68", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "yta-pipeline"
+version = "0.1.0"
+description = "Open-source local YouTube video and audience analytics pipeline"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+  "yt-dlp>=2025.1.0",
+  "ffmpeg-python>=0.2.0",
+  "faster-whisper>=1.1.0",
+  "numpy>=1.26.0",
+  "pandas>=2.2.0",
+  "opencv-python>=4.10.0.84",
+  "scikit-learn>=1.5.0",
+  "nltk>=3.9.0",
+  "textblob>=0.18.0.post0",
+  "spacy>=3.8.0",
+  "youtube-comment-downloader>=0.1.76",
+  "librosa>=0.10.2",
+  "scenedetect[opencv]>=0.6.4",
+  "matplotlib>=3.9.0",
+  "tqdm>=4.67.0",
+  "pyyaml>=6.0.2"
+]
+
+[project.optional-dependencies]
+vision = [
+  "fer>=22.5.1",
+  "mediapipe>=0.10.14"
+]
+ocr = [
+  "pytesseract>=0.3.10"
+]
+dashboard = [
+  "streamlit>=1.42.0"
+]
+
+[project.scripts]
+yta-analyze = "yta_pipeline.cli:main"
+
+[tool.setuptools]
+package-dir = {"" = "src"}
+
+[tool.setuptools.packages.find]
+where = ["src"]
